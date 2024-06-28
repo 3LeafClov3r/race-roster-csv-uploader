@@ -22,6 +22,6 @@ To use:
 6) enable both the google drive api and the google sheet api in google's developer console and add service_account.json file to the same directory as the other files
 
 To install required packages
-``` pip install requirements.txt  ```
+```pip install requirements.txt```
 To run the website: 
-``` streamlit run main.py```
+```streamlit run main.py```
