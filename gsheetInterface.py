@@ -37,7 +37,9 @@ def setup():  # literally copied and pasted just allows for writing to spreadshe
     )
 
     gc = gspread.authorize(credentials)
-    sh = gc.open("WaterDogRunData")
+    lst = get_sheet_name_and_id()
+    sh = gc.open(lst[1])
+
     return sh
 
 
