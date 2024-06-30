@@ -8,12 +8,12 @@ To use:
     "sheet_name": "sheet_name_goes_here",
     "sheet_id":  "sheet_id_goes here",
     "name": [
-        "numerical values only: ex .1 in increasing value order",
+        "1",
         "2",
         "3"
     ],
     "gid": [
-        "xxxxx- make sure that the gids and the names line up",
+        "xxxxx",
         "xxxxx",
         "xxxxx"
     ]
