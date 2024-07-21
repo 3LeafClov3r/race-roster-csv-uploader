@@ -4,7 +4,7 @@ import pandas as pd
 import json
 
 
-def get_gids_local_from_year(year_number):  # gets gids from local json instead of google api (keeping requests low)
+def get_gids_local_from_year(year_number:int):  # gets gids from local json instead of google api (keeping requests low)
     f = open('info.json')
     data = json.load(f)
     gid = ""

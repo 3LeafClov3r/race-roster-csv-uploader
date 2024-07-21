@@ -1,8 +1,10 @@
 import streamlit as st
 import pandas as pd
-from gsheetInterface import write_data, get_first_date, is_new_data
+from gsheetInterface import *
+from datetime import datetime, date
 
-current_year_number = 7
+
+current_year_number = date.today().year
 
 
 uploaded = False
@@ -19,7 +21,11 @@ if uploaded_file is not None:
 submit = st.button("submit")
 
 if submit and uploaded:
-    if get_first_date(current_year_number) == dataframe['Date Registered'].iloc[0]:  # gets first row, date registered column
+    stringg = dataframe['Date Registered'].iloc[0]
+    stringg = stringg[:len(stringg)-4]
+    year_of_csv = datetime.strptime(stringg, "%Y-%m-%d %H:%M:%S").year
+    print(year_of_csv)
+    if current_year_number == year_of_csv:
         match is_new_data(dataframe, current_year_number):
             case 0:
                 st.write("Data already up to date")
