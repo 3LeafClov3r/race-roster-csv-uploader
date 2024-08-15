@@ -2,7 +2,9 @@ from google.oauth2.service_account import Credentials
 import gspread
 import pandas as pd
 import json
-
+import time
+from class_init import *
+from jsonHandling import *
 
 def get_gids_local_from_year(year_number:int):  # gets gids from local json instead of google api (keeping requests low)
     f = open('info.json')
@@ -32,13 +34,18 @@ def setup():  # literally copied and pasted just allows for writing to spreadshe
     ]
 
     credentials = Credentials.from_service_account_file(
-        'service_account.json',
+        'secret_new_key.json',
         scopes=scopes
     )
 
     gc = gspread.authorize(credentials)
-    lst = get_sheet_name_and_id()
-    sh = gc.open(lst[1])
+    # lst = get_sheet_name_and_id()
+    stuff = get_secure_info()
+    info_gid = stuff[0]
+    sheet_id = stuff[1]
+    sheet_name = stuff[2]
+    print(f"sheet_name:{sheet_name}")
+    sh = gc.open(sheet_name)
 
     return sh
 
@@ -50,25 +57,20 @@ def get_gids():  # uses api to get gids
 
 def write_data(dataframe, year_number):  # actually writes to the sheet
     sh = setup()
-    gid = get_gids_local_from_year(year_number)
+    # gid = get_gids_local_from_year(year_number)
+    info = Information()
+    gid = info.get_gid_current_year()
     sh2 = sh.get_worksheet_by_id(gid)
     sh2.clear()
     sh2.update([dataframe.columns.values.tolist()] + dataframe.values.tolist())
 
 
-def get_dataframe_by_year(year):  # returns dataframe from sheet
-    lst = get_sheet_name_and_id()
-
-    gid = get_gids_local_from_year(year)
-
-    url = f"https://docs.google.com/spreadsheets/d/{lst[0]}/gviz/tq?tqx=out:csv&sheet={lst[1]}&gid={gid}"
-    data = pd.read_csv(url, dtype=str).fillna("")
-    df = pd.DataFrame(data)
-    return df
 
 
-def is_new_data(df, year_number):
-    dataframe = get_dataframe_by_year(year_number)
+
+def is_new_data(df):
+    info = Information()
+    dataframe = info.get_current_df()
     if dataframe.equals(df):
         return 0  # means same data
     else:
@@ -77,7 +79,29 @@ def is_new_data(df, year_number):
         return 1  # means upload new data
 
 
-def get_first_date(year):  # checks if correct year by first registration date
-    data = get_dataframe_by_year(year)
-    return data['Date Registered'].iloc[0]
 
+
+
+
+def update_info_sheet(race_name: str, start_date:datetime, end_date:datetime, gid:int):
+    sh = setup()
+    info = Information()
+    dataframe = info.dataframe
+    dataframe.loc[len(dataframe.index)] = [race_name, start_date, end_date, str(gid)]
+    sh2 = sh.get_worksheet_by_id(info.info_gid)
+    sh2.clear()
+    sh2.update([dataframe.columns.values.tolist()] + dataframe.values.tolist())
+
+
+
+def write_new_race(dataframe: pd.DataFrame, race_name: str, start_date:datetime, end_date:datetime) -> None:
+    sh = setup()
+    sh.add_worksheet(title=f"{race_name}")
+    worksheets = sh.worksheets()
+    time.sleep(6)
+    for sheet in worksheets:
+        if sheet.title == race_name:
+            update_info_sheet(race_name, start_date, end_date, sheet.id)
+            sh2 = sh.get_worksheet_by_id(sheet.id)
+            sh2.clear()
+            sh2.update([dataframe.columns.values.tolist()] + dataframe.values.tolist())
